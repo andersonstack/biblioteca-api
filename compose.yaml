@@ -1,0 +1,18 @@
+services:
+  biblioteca-service:
+    image: mariadb:11.7.2
+    container_name: biblioteca-service
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+    volumes:
+      - $HOME/docker/volumes/biblioteca-service:/var/lib/mysql
+    ports:
+      - "3306:3306"
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:25
+    container_name: cloudbeaver-biblioteca
+    ports:
+      - "8978:8978"
+    depends_on:
+      - biblioteca-service
