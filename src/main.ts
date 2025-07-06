@@ -20,6 +20,10 @@ app.post("/usuario", async (req, res) => {
       return void res
         .status(201)
         .json({ success: true, message: "Usuário criado com sucesso" });
+    } else {
+      return void res
+        .status(401)
+        .json({ sucess: false, message: "Usuário já existe no sistema!" });
     }
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
