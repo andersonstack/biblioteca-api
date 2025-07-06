@@ -16,26 +16,29 @@ const connectionDB = async () => {
 };
 
 export const createUserInBD = async (
-  user: String,
-  nome: String,
+  userName: String,
+  name: String,
   senha: String
-) => {
+): Promise<boolean> => {
   const connection = await connectionDB();
 
   if (connection != undefined) {
     try {
       const query = `
-                INSERT INTO usuario (user_name, name, senha)
+                INSERT INTO usuarios (userName, name, senha)
                     VALUES (?, ?, ?)
             `;
-      await connection.execute(query, [user, nome, senha]);
-      console.log(`Usuário '${user} adicionado com sucesso!'`);
+      await connection.execute(query, [userName, name, senha]);
+      console.log(`Usuário '${userName} adicionado com sucesso!'`);
       connection.end();
+      return true;
     } catch (error) {
-      console.log(`Erro ao criar o usuário ${user}: ${nome}`);
+      console.log(`Erro ao criar o usuário ${userName}: ${name}`);
       connection.end();
+      return false;
     }
   }
+  return false;
 };
 
 export const loginUserInBd = async (

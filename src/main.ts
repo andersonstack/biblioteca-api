@@ -11,14 +11,16 @@ app.listen(3000, () => {
 });
 
 app.post("/usuario", async (req, res) => {
-  const { user, nome, senha } = req.body;
+  const { userName, name, senha } = req.body;
 
   try {
-    await createUserInBD(user, nome, senha);
-    console.log("Requisição concluída");
-    return void res
-      .status(201)
-      .json({ success: true, message: "Usuário criado com sucesso" });
+    const auth = await createUserInBD(userName, name, senha);
+    if (auth) {
+      console.log("Requisição concluída");
+      return void res
+        .status(201)
+        .json({ success: true, message: "Usuário criado com sucesso" });
+    }
   } catch (error) {
     console.error("Erro ao criar usuário:", error);
     return void res
