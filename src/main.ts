@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { createUserInBD, loginUserInBd } from "./database/db";
+import { createUserInBD, loginUserInBd, getBooksInBd } from "./database/db";
 
 dotenv.config();
 const app = express();
@@ -64,4 +64,9 @@ app.post("/login", async (req, res) => {
       .status(500)
       .json({ success: false, message: "Erro interno no servidor" });
   }
+});
+
+app.get("/livros", async (req, res) => {
+  const listaLivros = await getBooksInBd();
+  console.log(listaLivros);
 });

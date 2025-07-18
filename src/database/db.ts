@@ -11,6 +11,13 @@ interface UsuarioComSenha extends UsuarioSemSenha {
   senha: string;
 }
 
+interface Livro {
+  titulo: string;
+  ano: number;
+  descricao: string;
+  imagem_caminho: string;
+}
+
 const connectionDB = async () => {
   try {
     const connection = await mysql.createConnection({
@@ -72,4 +79,15 @@ export const loginUserInBd = async (
   const { senha: _, ...usuarioSemSenha } = usuarioBD;
 
   return usuarioSemSenha;
+};
+
+export const getBooksInBd = async (): Promise<Livro[] | null> => {
+  const connection = await connectionDB();
+  const [rows] = await connection!.execute(
+    "SELECT titulo, ano, descricao, imagem_caminho FROM livros"
+  );
+  const livrosLista = rows as Livro[];
+  if (livrosLista.length === 0) return null;
+
+  return livrosLista;
 };
