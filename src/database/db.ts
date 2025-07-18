@@ -16,9 +16,9 @@ const connectionDB = async () => {
     const connection = await mysql.createConnection({
       host: "localhost",
       port: 3307,
-      password: "password",
+      password: "123456",
       user: "root",
-      database: "usuarios",
+      database: "biblioteca_bd",
     });
     return connection;
   } catch (error) {
