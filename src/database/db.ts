@@ -1,4 +1,15 @@
 import mysql from "mysql2/promise";
+import bcrypt from "bcrypt";
+
+interface UsuarioSemSenha {
+  id: number;
+  userName: string;
+  name: string;
+}
+
+interface UsuarioComSenha extends UsuarioSemSenha {
+  senha: string;
+}
 
 const connectionDB = async () => {
   try {
@@ -16,45 +27,49 @@ const connectionDB = async () => {
 };
 
 export const createUserInBD = async (
-  userName: String,
-  name: String,
-  senha: String
-): Promise<boolean> => {
+  userName: string,
+  name: string,
+  senha: string
+): Promise<201 | 401 | 500> => {
   const connection = await connectionDB();
 
   if (connection != undefined) {
     try {
       const query = `
-                INSERT INTO usuarios (userName, name, senha)
-                    VALUES (?, ?, ?)
-            `;
-      await connection.execute(query, [userName, name, senha]);
-      console.log(`Usuário '${userName} adicionado com sucesso!'`);
+      INSERT INTO usuarios (userName, name, senha)
+      VALUES (?, ?, ?)
+      `;
+      const senhaHash = await bcrypt.hash(senha, 10);
+      await connection.execute(query, [userName, name, senhaHash]);
       connection.end();
-      return true;
+      return 201;
     } catch (error) {
       console.log(`Erro ao criar o usuário ${userName}: ${name}`);
       connection.end();
-      return false;
+      return 401;
     }
   }
-  return false;
+  return 500;
 };
-
-interface Usuario {
-  id: number;
-  userName: string;
-  name: string;
-}
 
 export const loginUserInBd = async (
   userName: string,
   senha: string
-): Promise<Usuario | null> => {
+): Promise<UsuarioSemSenha | null> => {
   const connection = await connectionDB();
-  const query = "SELECT * FROM usuarios WHERE userName = ? AND senha = ?";
-  const [rows] = await connection!.execute(query, [userName, senha]);
-  const usuario = rows as Usuario[];
+  const query = "SELECT * FROM usuarios WHERE userName = ?";
+  const [rows] = await connection!.execute(query, [userName]);
 
-  return usuario.length > 0 ? usuario[0] : null;
+  const usuario = rows as UsuarioComSenha[];
+
+  if (usuario.length === 0) return null;
+
+  const usuarioBD = usuario[0];
+  const senhaHash = await bcrypt.compare(senha, usuarioBD.senha);
+
+  if (!senhaHash) return null;
+
+  const { senha: _, ...usuarioSemSenha } = usuarioBD;
+
+  return usuarioSemSenha;
 };

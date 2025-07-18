@@ -13,13 +13,12 @@ app.listen(3000, () => {
   console.log("[!] Back-end rodando!");
 });
 
-app.post("/usuario", async (req, res) => {
+app.post("/cadastro", async (req, res) => {
   const { userName, name, senha } = req.body;
 
   try {
     const auth = await createUserInBD(userName, name, senha);
     if (auth) {
-      console.log("Requisição concluída");
       return void res
         .status(201)
         .json({ success: true, message: "Usuário criado com sucesso" });
