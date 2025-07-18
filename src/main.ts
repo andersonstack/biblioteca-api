@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import { createUserInBD, loginUserInBd } from "./database/db";
 
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -38,10 +41,18 @@ app.post("/login", async (req, res) => {
 
   try {
     const auth = await loginUserInBd(userName, senha);
+    console.log(auth);
 
     if (auth) {
       console.log("Login bem sucedido!");
-      return void res.status(200).json({ success: true });
+
+      const token = jwt.sign(
+        { userName: auth.userName, id: auth.id },
+        process.env.KEY!,
+        { expiresIn: "1h" }
+      );
+
+      return void res.status(200).json({ success: true, token });
     } else {
       console.log("Falha ao entrar!");
       return void res

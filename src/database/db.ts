@@ -41,13 +41,20 @@ export const createUserInBD = async (
   return false;
 };
 
+interface Usuario {
+  id: number;
+  userName: string;
+  name: string;
+}
+
 export const loginUserInBd = async (
   userName: string,
   senha: string
-): Promise<boolean> => {
+): Promise<Usuario | null> => {
   const connection = await connectionDB();
   const query = "SELECT * FROM usuarios WHERE userName = ? AND senha = ?";
   const [rows] = await connection!.execute(query, [userName, senha]);
+  const usuario = rows as Usuario[];
 
-  return (rows as any[]).length > 0;
+  return usuario.length > 0 ? usuario[0] : null;
 };
