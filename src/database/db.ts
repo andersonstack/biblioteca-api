@@ -16,6 +16,7 @@ interface Livro {
   ano: number;
   descricao: string;
   imagem_caminho: string;
+  disponibilidade: boolean;
 }
 
 const connectionDB = async () => {
@@ -84,7 +85,7 @@ export const loginUserInBd = async (
 export const getBooksInBd = async (): Promise<Livro[] | null> => {
   const connection = await connectionDB();
   const [rows] = await connection!.execute(
-    "SELECT titulo, ano, descricao, imagem_caminho FROM livros"
+    "SELECT titulo, ano, descricao, imagem_caminho, disponibilidade FROM livros"
   );
   const livrosLista = rows as Livro[];
   if (livrosLista.length === 0) return null;
