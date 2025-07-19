@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { createUserInBD, loginUserInBd, getBooksInBd } from "./database/db";
+import path from "path";
 
 dotenv.config();
 const app = express();
@@ -40,7 +41,6 @@ app.post("/login", async (req, res) => {
 
   try {
     const auth = await loginUserInBd(userName, senha);
-    console.log(auth);
 
     if (auth) {
       console.log("Login bem sucedido!");
@@ -50,7 +50,6 @@ app.post("/login", async (req, res) => {
         process.env.KEY!,
         { expiresIn: "1h" }
       );
-
       return void res.status(200).json({ success: true, token });
     } else {
       console.log("Falha ao entrar!");
@@ -66,7 +65,11 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.get("/livros", async (req, res) => {
   const listaLivros = await getBooksInBd();
-  console.log(listaLivros);
+  if (listaLivros?.length != 0) {
+    return void res.status(200).json({ sucess: true, livros: listaLivros });
+  } else return void res.status(500).json({ sucess: false });
 });
