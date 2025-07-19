@@ -45,12 +45,13 @@ app.post("/login", async (req, res) => {
     if (auth) {
       console.log("Login bem sucedido!");
 
+      const name = auth["name"];
       const token = jwt.sign(
         { userName: auth.userName, id: auth.id },
         process.env.KEY!,
         { expiresIn: "1h" }
       );
-      return void res.status(200).json({ success: true, token });
+      return void res.status(200).json({ success: true, token, name });
     } else {
       console.log("Falha ao entrar!");
       return void res
