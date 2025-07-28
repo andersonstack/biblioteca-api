@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { createUserInBD, loginUserInBd, getBooksInBd } from "./database/db";
+import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd } from "./database/db";
 import path from "path";
 
 dotenv.config();
@@ -46,12 +46,13 @@ app.post("/login", async (req, res) => {
       console.log("Login bem sucedido!");
 
       const name = auth["name"];
+      const userName = auth["userName"];
       const token = jwt.sign(
         { userName: auth.userName, id: auth.id },
         process.env.KEY!,
         { expiresIn: "1h" }
       );
-      return void res.status(200).json({ success: true, token, name });
+      return void res.status(200).json({ success: true, token, name, userName });
     } else {
       console.log("Falha ao entrar!");
       return void res
@@ -73,4 +74,13 @@ app.get("/livros", async (req, res) => {
   if (listaLivros?.length != 0) {
     return void res.status(200).json({ sucess: true, livros: listaLivros });
   } else return void res.status(500).json({ sucess: false });
+});
+
+app.get("/livrosEmprestimos", async (req, res) => {
+  const userName = req.body.userName as string;
+
+  const livrosEmprestados = await getBooksUserInBd(userName);
+  if (livrosEmprestados?.length != 0) {
+    return void res.status(200).json({ sucess: true, livrosEmprestados: livrosEmprestados });
+  } else return void res.status(400).json({ sucess: false });
 });
