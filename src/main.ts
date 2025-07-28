@@ -76,7 +76,7 @@ app.get("/livros", async (req, res) => {
   } else return void res.status(500).json({ sucess: false });
 });
 
-app.get("/livrosEmprestimos", async (req, res) => {
+app.post("/livrosEmprestimos", async (req, res) => {
   const userName = req.body.userName as string;
 
   const livrosEmprestados = await getBooksUserInBd(userName);
