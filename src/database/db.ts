@@ -19,6 +19,11 @@ interface Livro {
   disponibilidade: boolean;
 }
 
+interface LivroEmprestimo {
+  titulo: string;
+  imagem_caminho: string;
+}
+
 const connectionDB = async () => {
   try {
     const connection = await mysql.createConnection({
@@ -91,4 +96,24 @@ export const getBooksInBd = async (): Promise<Livro[] | null> => {
   if (livrosLista.length === 0) return null;
 
   return livrosLista;
+};
+
+export const getBooksUserInBd = async (
+  userName: string
+): Promise<LivroEmprestimo[] | null> => {
+  const connection = await connectionDB();
+
+  const query = `
+    SELECT l.titulo, l.imagem_caminho
+    FROM livros l
+    JOIN livroUsuario lu ON l.id = lu.livro_id
+    JOIN usuarios u ON u.id = lu.user_id
+    WHERE u.userName = ?
+  `;
+
+  const [rows] = await connection!.execute(query, [userName]);
+  const livrosEmprestimos = rows as LivroEmprestimo[];
+
+  if (livrosEmprestimos.length === 0) return null;
+  return livrosEmprestimos;
 };
