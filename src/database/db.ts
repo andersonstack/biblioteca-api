@@ -22,6 +22,8 @@ interface Livro {
 interface LivroEmprestimo {
   titulo: string;
   imagem_caminho: string;
+  data_vencimento: Date;
+  data_emprestimo: Date;
 }
 
 const connectionDB = async () => {
@@ -104,7 +106,7 @@ export const getBooksUserInBd = async (
   const connection = await connectionDB();
 
   const query = `
-    SELECT l.titulo, l.imagem_caminho
+    SELECT l.titulo, l.imagem_caminho, lu.data_emprestimo, lu.data_vencimento
     FROM livros l
     JOIN livroUsuario lu ON l.id = lu.livro_id
     JOIN usuarios u ON u.id = lu.user_id
