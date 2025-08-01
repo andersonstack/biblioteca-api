@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd } from "./database/db";
+import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd, saveBookInBd } from "./database/db";
 import path from "path";
 import multer from 'multer';
 import { baixarImagem } from "./utils/settings";
@@ -113,5 +113,9 @@ app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
     return void res.status(400).json({ erro: 'Imagem não enviada ou inválida' });
   }
 
-  return void res.status(201).json({sucess: "Livro cadastrado!"});
-})
+  const addBD = await saveBookInBd(titulo, descricao, Number(ano), caminhoImagem);
+
+  if (addBD != null) 
+    return void res.status(201).json({sucess: "Livro cadastrado!"});
+  return void res.status(501).json({ error: "Erro ao adicionar o livro no banco de dados" });
+});
