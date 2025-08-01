@@ -126,3 +126,29 @@ export const getBooksUserInBd = async (
   if (livrosEmprestimos.length === 0) return null;
   return livrosEmprestimos;
 };
+
+export const saveBookInBd = async (
+  titulo: string,
+  descricao: string,
+  ano: number,
+  imagem: string
+): Promise<any> => {
+  const connection = await connectionDB();
+
+  const query = `
+    INSERT INTO livros (titulo, ano, descricao, imagem_caminho, disponibilidade)
+    VALUES (?, ?, ?, ?, 1)
+  `;
+
+  const [result] = await connection!.execute(query, [
+    titulo,
+    ano,
+    descricao,
+    imagem,
+  ]);
+
+  await connection!.end();
+
+  // Pode retornar o resultado da inserção (ex: insertId)
+  return result;
+};
