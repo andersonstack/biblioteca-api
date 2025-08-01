@@ -5,6 +5,7 @@ interface UsuarioSemSenha {
   id: number;
   userName: string;
   name: string;
+  role: string;
 }
 
 interface UsuarioComSenha extends UsuarioSemSenha {
@@ -72,7 +73,7 @@ export const loginUserInBd = async (
   senha: string
 ): Promise<UsuarioSemSenha | null> => {
   const connection = await connectionDB();
-  const query = "SELECT * FROM usuarios WHERE userName = ?";
+  const query = "SELECT id, userName, name, senha, role FROM usuarios WHERE userName = ?";
   const [rows] = await connection!.execute(query, [userName]);
 
   const usuario = rows as UsuarioComSenha[];

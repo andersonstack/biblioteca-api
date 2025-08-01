@@ -47,12 +47,14 @@ app.post("/login", async (req, res) => {
 
       const name = auth["name"];
       const userName = auth["userName"];
+      const role = auth["role"];
+
       const token = jwt.sign(
-        { userName: auth.userName, id: auth.id },
+        { userName: auth.userName, id: auth.id, role: auth.role },
         process.env.KEY!,
         { expiresIn: "1h" }
       );
-      return void res.status(200).json({ success: true, token, name, userName });
+      return void res.status(200).json({ success: true, token, name, userName, role });
     } else {
       console.log("Falha ao entrar!");
       return void res
