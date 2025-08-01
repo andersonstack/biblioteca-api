@@ -107,7 +107,7 @@ export const getBooksUserInBd = async (
   const connection = await connectionDB();
 
   const query = `
-    SELECT l.titulo, l.imagem_caminho, lu.data_emprestimo, lu.data_vencimento
+    SELECT l.titulo, l.imagem_caminho, lu.data_emprestimo, lu.data_vencimento, lu.devolucao
     FROM livros l
     JOIN livroUsuario lu ON l.id = lu.livro_id
     JOIN usuarios u ON u.id = lu.user_id
