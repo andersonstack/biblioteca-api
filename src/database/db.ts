@@ -13,6 +13,7 @@ interface UsuarioComSenha extends UsuarioSemSenha {
 }
 
 interface Livro {
+  id: string;
   titulo: string;
   ano: number;
   descricao: string;
@@ -71,6 +72,7 @@ export const createUserInBD = async (
     }
   }
 
+  await connection!.end();
   return 500;
 };
 
@@ -84,26 +86,37 @@ export const loginUserInBd = async (
 
   const usuario = rows as UsuarioComSenha[];
 
-  if (usuario.length === 0) return null;
+  if (usuario.length === 0) {
+    connection!.end();
+    return null;
+  };
 
   const usuarioBD = usuario[0];
   const senhaHash = await bcrypt.compare(senha, usuarioBD.senha);
 
-  if (!senhaHash) return null;
+  if (!senhaHash) {
+    await connection!.end();
+    return null;
+  };
 
   const { senha: _, ...usuarioSemSenha } = usuarioBD;
 
+  await connection!.end();
   return usuarioSemSenha;
 };
 
 export const getBooksInBd = async (): Promise<Livro[] | null> => {
   const connection = await connectionDB();
   const [rows] = await connection!.execute(
-    "SELECT titulo, ano, descricao, imagem_caminho, disponibilidade FROM livros"
+    "SELECT id, titulo, ano, descricao, imagem_caminho, disponibilidade FROM livros"
   );
   const livrosLista = rows as Livro[];
-  if (livrosLista.length === 0) return null;
+  if (livrosLista.length === 0) {
+    await connection!.end();
+    return null;
+  };
 
+  await connection!.end();
   return livrosLista;
 };
 
@@ -123,7 +136,12 @@ export const getBooksUserInBd = async (
   const [rows] = await connection!.execute(query, [userName]);
   const livrosEmprestimos = rows as LivroEmprestimo[];
 
-  if (livrosEmprestimos.length === 0) return null;
+  if (livrosEmprestimos.length === 0) {
+    await connection!.end();
+    return null;
+  };
+
+  await connection!.end();
   return livrosEmprestimos;
 };
 
@@ -149,6 +167,5 @@ export const saveBookInBd = async (
 
   await connection!.end();
 
-  // Pode retornar o resultado da inserção (ex: insertId)
   return result;
 };
