@@ -1,32 +1,8 @@
 import mysql from "mysql2/promise";
 import bcrypt from "bcrypt";
+import { Livro, UsuarioComSenha, UsuarioSemSenha, LivroEmprestimo } from "../interfaces/interfaces.js";
 
-interface UsuarioSemSenha {
-  id: number;
-  userName: string;
-  name: string;
-  role: string;
-}
 
-interface UsuarioComSenha extends UsuarioSemSenha {
-  senha: string;
-}
-
-interface Livro {
-  id: string;
-  titulo: string;
-  ano: number;
-  descricao: string;
-  imagem_caminho: string;
-  disponibilidade: boolean;
-}
-
-interface LivroEmprestimo {
-  titulo: string;
-  imagem_caminho: string;
-  data_vencimento: Date;
-  data_emprestimo: Date;
-}
 
 const connectionDB = async () => {
   try {
