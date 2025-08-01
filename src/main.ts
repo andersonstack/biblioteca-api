@@ -2,10 +2,11 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd, saveBookInBd } from "./database/db";
+import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd, saveBookInBd, updateBookInBd } from "./database/db";
 import path from "path";
 import multer from 'multer';
 import { baixarImagem } from "./utils/settings";
+import { Livro } from "./interfaces/interfaces";
 
 dotenv.config();
 const app = express();
@@ -118,4 +119,39 @@ app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
   if (addBD != null) 
     return void res.status(201).json({sucess: "Livro cadastrado!"});
   return void res.status(501).json({ error: "Erro ao adicionar o livro no banco de dados" });
+});
+
+app.post("/atualizarLivro", upload.single('imagem'), async (req, res) => {
+  const {id, titulo, descricao, ano, imagem: imagemLink, disponivel} = req.body;
+
+  let caminhoImagem = '';
+  if (req.file) {
+     // Envio upload
+     caminhoImagem = `/uploads/${req.file.filename}`;
+   } else if (imagemLink && imagemLink.startsWith('http')) {
+     // Envio link
+     const imagemBaixada: Promise<string> = baixarImagem(imagemLink);
+     caminhoImagem = (await imagemBaixada).toString();
+
+     if (caminhoImagem.length == 0)
+       return void res.status(400).json({ erro: 'Erro ao baixar imagem externa' });
+
+   } else {
+     return void res.status(400).json({ erro: 'Imagem não enviada ou inválida' });
+   }
+
+   const updateLivro: Livro = {
+    id: id,
+    titulo: titulo,
+    descricao: descricao,
+    ano: Number(ano),
+    imagem_caminho: caminhoImagem,
+    disponibilidade: disponivel
+   }
+
+   const updateBD = await updateBookInBd(updateLivro);
+
+   if (updateBD != null) 
+     return void res.status(201).json({sucess: "Livro editado!"});
+   return void res.status(501).json({ error: "Erro ao editar o livro no banco de dados" });
 });
