@@ -13,7 +13,7 @@ export async function baixarImagem(imagemLink: string): Promise<string> {
 
       const nomeArquivo = Date.now() + path.extname(imagemLink.split('?')[0]);
 
-      const caminhoCompleto = path.join('src/uploads', nomeArquivo);
+      const caminhoCompleto = path.join('/uploads', nomeArquivo);
       const writer = fs.createWriteStream(caminhoCompleto);
   
       response.data.pipe(writer);
@@ -23,7 +23,7 @@ export async function baixarImagem(imagemLink: string): Promise<string> {
         writer.on('error', reject);
       });
 
-      return `src/uploads/${nomeArquivo}`;
+      return `/uploads/${nomeArquivo}`;
 
     } catch (error) {
       return "";

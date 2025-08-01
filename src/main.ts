@@ -100,7 +100,7 @@ app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
 
   if (req.file) {
     // Envio upload
-    caminhoImagem = `src/uploads/${req.file.filename}`;
+    caminhoImagem = `/uploads/${req.file.filename}`;
   } else if (imagemLink && imagemLink.startsWith('http')) {
     // Envio link
     const imagemBaixada: Promise<string> = baixarImagem(imagemLink);
