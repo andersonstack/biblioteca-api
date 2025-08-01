@@ -94,7 +94,7 @@ app.post("/livrosEmprestimos", async (req, res) => {
 });
 
 app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
-  const {titulo, descricao, ano, imagem: imagemLink} = req.body;
+  const {titulo, descricao, ano, imagem: imagemLink, disponivel} = req.body;
 
   let caminhoImagem = ''
 
