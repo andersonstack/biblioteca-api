@@ -52,19 +52,25 @@ export const createUserInBD = async (
   if (connection != undefined) {
     try {
       const query = `
-      INSERT INTO usuarios (userName, name, senha)
-      VALUES (?, ?, ?)
+        INSERT INTO usuarios (userName, name, senha)
+        VALUES (?, ?, ?)
       `;
       const senhaHash = await bcrypt.hash(senha, 10);
       await connection.execute(query, [userName, name, senhaHash]);
-      connection.end();
+      await connection.end();
       return 201;
-    } catch (error) {
-      console.log(`Erro ao criar o usuário ${userName}: ${name}`);
-      connection.end();
-      return 401;
+    } catch (error: any) {
+
+      if (error.code === "ER_DUP_ENTRY") {
+        await connection.end();
+        return 401;
+      }
+
+      await connection.end();
+      return 500;
     }
   }
+
   return 500;
 };
 

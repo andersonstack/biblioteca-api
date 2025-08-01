@@ -17,23 +17,16 @@ app.listen(3000, () => {
 app.post("/cadastro", async (req, res) => {
   const { userName, name, senha } = req.body;
 
-  try {
-    const auth = await createUserInBD(userName, name, senha);
-    if (auth) {
-      return void res
-        .status(201)
-        .json({ success: true, message: "Usuário criado com sucesso" });
-    } else {
-      return void res
-        .status(401)
-        .json({ sucess: false, message: "Usuário já existe no sistema!" });
-    }
-  } catch (error) {
-    console.error("Erro ao criar usuário:", error);
-    return void res
-      .status(500)
-      .json({ success: false, message: "Erro ao criar usuário" });
-  }
+  const auth = await createUserInBD(userName, name, senha);
+
+  if (auth === 201) 
+    return void res.status(201).json({ success: true, message: "Usuário criado com sucesso" });
+
+  if (auth === 401) 
+    return void res.status(400).json({ success: false, message: "Usuário já existe no sistema!" });
+  
+  return void res.status(500).json({ success: false, message: "Erro ao criar usuário" });
+  
 });
 
 app.post("/login", async (req, res) => {
