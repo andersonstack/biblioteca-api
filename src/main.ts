@@ -1,12 +1,22 @@
+// Bibliotecas
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd, saveBookInBd, updateBookInBd } from "./database/db";
 import path from "path";
 import multer from 'multer';
+
+// Utils
 import { baixarImagem } from "./utils/settings";
+
+// Interfaces
 import { Livro } from "./interfaces/interfaces";
+
+// Banco de dados
+import { loginUserInBd, createUserInBD } from "./database/database_usuario";
+import { getBooksInBd, saveBookInBd, updateBookInBd } from "./database/database_livro";
+import { getBooksUserInBd } from "./database/database_livrousuario";
+
 
 dotenv.config();
 const app = express();
