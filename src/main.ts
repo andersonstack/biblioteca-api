@@ -4,11 +4,24 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { createUserInBD, loginUserInBd, getBooksInBd, getBooksUserInBd } from "./database/db";
 import path from "path";
+import multer from 'multer';
+import { baixarImagem } from "./utils/settings";
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+/* Configurando onde as imagens serão salvas */
+const storage = multer.diskStorage({
+  destination: "./src/uploads/",
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + file.originalname;
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage });
+///
 
 app.listen(3000, () => {
   console.log("[!] Back-end rodando!");
@@ -79,3 +92,26 @@ app.post("/livrosEmprestimos", async (req, res) => {
     return void res.status(200).json({ sucess: true, livrosEmprestados: livrosEmprestados });
   } else return void res.status(400).json({ sucess: false });
 });
+
+app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
+  const {titulo, descricao, ano, imagem: imagemLink} = req.body;
+
+  let caminhoImagem = ''
+
+  if (req.file) {
+    // Envio upload
+    caminhoImagem = `src/uploads/${req.file.filename}`;
+  } else if (imagemLink && imagemLink.startsWith('http')) {
+    // Envio link
+    const imagemBaixada: Promise<string> = baixarImagem(imagemLink);
+    caminhoImagem = (await imagemBaixada).toString();
+    
+    if (caminhoImagem.length == 0)
+      return void res.status(400).json({ erro: 'Erro ao baixar imagem externa' });
+
+  } else {
+    return void res.status(400).json({ erro: 'Imagem não enviada ou inválida' });
+  }
+
+  return void res.status(201).json({sucess: "Livro cadastrado!"});
+})
