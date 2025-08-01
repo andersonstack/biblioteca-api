@@ -145,3 +145,28 @@ export const saveBookInBd = async (
 
   return result;
 };
+
+export const updateBookInBd = async (livro: Livro) => {
+  const connection = await connectionDB();
+
+  console.log(livro);
+
+  const query = `
+    UPDATE livros
+      SET
+        titulo = ?,
+        ano = ?,
+        descricao = ?,
+        imagem_caminho = ?,
+        disponibilidade = ?
+      WHERE id = ?
+  `;
+
+  const [result] = await connection!.execute(query, [
+    livro.titulo, livro.ano, livro.descricao, livro.imagem_caminho, livro.disponibilidade, livro.id
+  ]);
+
+  await connection!.end();
+
+  return result;
+};
