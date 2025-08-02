@@ -1,5 +1,5 @@
 import { app } from "../main";
-import { getBooksUserInBd } from "../database/database_livrousuario";
+import { getBooksUserInBd, borrowABack } from "../database/database_livrousuario";
 
 app.post("/livrosEmprestimos", async (req, res) => {
   const userName = req.body.userName as string;
@@ -9,3 +9,13 @@ app.post("/livrosEmprestimos", async (req, res) => {
     return void res.status(200).json({ sucess: true, livrosEmprestados: livrosEmprestados });
   } else return void res.status(400).json({ sucess: false });
 });
+
+app.post("/fazerEmprestimo", async (req, res) => {
+  const {idUser, idBook} = req.body;
+
+  const result = borrowABack(idUser, idBook);
+
+  if (result != null) return void res.status(200).json({sucess: true});
+  return void res.status(400).json({error: true});
+  
+})
