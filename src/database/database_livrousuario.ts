@@ -25,3 +25,23 @@ export const getBooksUserInBd = async (
   await connection!.end();
   return livrosEmprestimos;
 };
+
+export const borrowABack = async (idUser: number, idBook: number) => {
+  const connection = await connectionDB();
+
+  const query = `
+    INSERT INTO livroUsuario (user_id, livro_id, data_emprestimo, data_vencimento)
+      VALUES (?, ?, ?, ?)
+  `;
+
+  const dataEmprestimo = new Date();
+  const copiaDataEmprestimo = new Date(dataEmprestimo);
+  const dataDevolucao = new Date(copiaDataEmprestimo.setDate(copiaDataEmprestimo.getDate() + 15));
+  const dataEmprestimoFormat = dataEmprestimo.toISOString().substring(0, 10);
+  const dataDevolucaoFormat = dataDevolucao.toISOString().substring(0, 10);
+
+  const [rows] = await connection!.execute(query, [idUser, idBook, dataEmprestimoFormat, dataDevolucaoFormat]);
+
+  await connection!.end();
+  return rows;
+};
