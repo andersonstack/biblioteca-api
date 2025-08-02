@@ -45,3 +45,18 @@ export const borrowABack = async (idUser: number, idBook: number) => {
   await connection!.end();
   return rows;
 };
+
+export const returnTheBook = async (
+  idEmprestimo: number
+) => {
+  const connection = await connectionDB();
+
+  const query = `
+    UPDATE livroUsuario lu SET devolucao = 1 WHERE lu.id = ?
+  `
+  const [rows] = await connection!.execute(query, [idEmprestimo]);
+
+  await connection!.end();
+
+  return rows;
+}
