@@ -26,13 +26,20 @@ export const getBooksUserInBd = async (
   return livrosEmprestimos;
 };
 
-export const borrowABack = async (idUser: number, idBook: number) => {
+export const borrowABack = async (idUser: number, idBook: number): Promise<boolean> => {
   const connection = await connectionDB();
 
-  const query = `
-    INSERT INTO livroUsuario (user_id, livro_id, data_emprestimo, data_vencimento)
-      VALUES (?, ?, ?, ?)
-  `;
+  const [livroDisponivelRows]: any = await connection!.execute(
+    `SELECT disponibilidade FROM livros WHERE id = ?`,
+    [idBook]
+  ) ;
+
+  const livroDisponivel = livroDisponivelRows[0]?.disponibilidade;
+
+  if (livroDisponivel !== 1) {
+    await connection?.end();
+    return false;
+  } 
 
   const dataEmprestimo = new Date();
   const copiaDataEmprestimo = new Date(dataEmprestimo);
@@ -40,10 +47,30 @@ export const borrowABack = async (idUser: number, idBook: number) => {
   const dataEmprestimoFormat = dataEmprestimo.toISOString().substring(0, 10);
   const dataDevolucaoFormat = dataDevolucao.toISOString().substring(0, 10);
 
-  const [rows] = await connection!.execute(query, [idUser, idBook, dataEmprestimoFormat, dataDevolucaoFormat]);
+  try {
+    await connection!.beginTransaction();
 
-  await connection!.end();
-  return rows;
+    await connection!.execute(
+      `INSERT INTO livroUsuario (user_id, livro_id, data_emprestimo, data_vencimento)
+      VALUES (?, ?, ?, ?) `,
+      [idUser, idBook, dataEmprestimoFormat, dataDevolucaoFormat]
+    );
+
+    await connection!.execute(
+      `UPDATE livros SET disponibilidade = 0 WHERE id = ?`,
+      [idBook]
+    );
+
+    await connection!.commit();
+
+  } catch (error){
+    await connection!.rollback();
+    await connection!.end();
+    console.log(`Erro na consulta de banco de dados: ${error}`);
+    return false;
+  }
+  
+  return true;
 };
 
 export const returnTheBook = async (
