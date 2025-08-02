@@ -74,16 +74,34 @@ export const borrowABack = async (idUser: number, idBook: number): Promise<boole
 };
 
 export const returnTheBook = async (
-  idEmprestimo: number
-) => {
+  idEmprestimo: number,
+  idBook: number,
+): Promise<boolean> => {
   const connection = await connectionDB();
 
-  const query = `
-    UPDATE livroUsuario lu SET devolucao = 1 WHERE lu.id = ?
-  `
-  const [rows] = await connection!.execute(query, [idEmprestimo]);
+  try {
+    await connection!.beginTransaction();
+
+    await connection!.execute(
+      `UPDATE livroUsuario lu SET devolucao = 1 WHERE lu.id = ?`,
+      [idEmprestimo]
+    );
+
+    await connection!.execute(
+      `UPDATE livros l SET disponibilidade = 1 WHERE l.id = ?`,
+      [idBook]
+    );
+
+    await connection!.commit();
+
+  } catch (error) {
+    await connection!.rollback();
+    await connection!.end();
+    console.log(`Erro na consulta de banco de dados: ${error}`);
+    return false;
+  }
 
   await connection!.end();
 
-  return rows;
+  return true;
 }

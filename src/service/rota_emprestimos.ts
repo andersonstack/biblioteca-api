@@ -21,10 +21,10 @@ app.post("/fazerEmprestimo", async (req, res) => {
 })
 
 app.post("/devolverEmprestimo", async (req, res) => {
-  const idEmprestimo = req.body.idEmprestimo as number;
+  const {idEmprestimo, idBook} = req.body;
   
-  const devolucao = returnTheBook(idEmprestimo);
+  const devolucao = await returnTheBook(idEmprestimo, idBook);
 
-  if (devolucao != null) return void res.status(200).json({ sucess: true });
+  if (devolucao != false) return void res.status(200).json({ sucess: true });
   return void res.status(400).json({ sucess: false });
 })
