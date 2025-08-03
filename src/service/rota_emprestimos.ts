@@ -20,10 +20,10 @@ app.post("/fazerEmprestimo", async (req, res) => {
   
 })
 
-app.post("/devolverEmprestimo", async (req, res) => {
-  const {idEmprestimo, idBook} = req.body;
+app.post("/devolucao", async (req, res) => {
+  const {userName, titleBook} = req.body;
   
-  const devolucao = await returnTheBook(idEmprestimo, idBook);
+  const devolucao = await returnTheBook(userName, titleBook);
 
   if (devolucao != false) return void res.status(200).json({ sucess: true });
   return void res.status(400).json({ sucess: false });

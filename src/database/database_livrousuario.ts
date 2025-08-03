@@ -86,13 +86,34 @@ export const borrowABack = async (userName: string, idBook: number): Promise<boo
 };
 
 export const returnTheBook = async (
-  idEmprestimo: number,
-  idBook: number,
+  userName: string,
+  titleBook: string,
 ): Promise<boolean> => {
   const connection = await connectionDB();
 
   try {
     await connection!.beginTransaction();
+
+    const [emprestimoRow]: any = await connection!.execute(
+      `SELECT lu.id, lu.livro_id FROM livroUsuario lu
+        JOIN usuarios u ON lu.user_id = u.id
+        JOIN livros l ON lu.livro_id = l.id
+        WHERE 
+          u.userName = ? AND
+          l.titulo = ? AND
+          lu.devolucao = FALSE
+        LIMIT 1
+      `,
+      [userName, titleBook]
+    );
+
+    const idEmprestimo = emprestimoRow[0]?.id;
+
+    if (!idEmprestimo) throw new Error("ID de empréstimo não encontrado!");
+
+    const idBook = emprestimoRow[0]?.livro_id;
+
+    if (!idBook) throw new Error("Erro ao ao pegar o ID do livro!");
 
     await connection!.execute(
       `UPDATE livroUsuario lu SET devolucao = 1 WHERE lu.id = ?`,
