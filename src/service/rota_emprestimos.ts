@@ -11,9 +11,9 @@ app.post("/livrosEmprestimos", async (req, res) => {
 });
 
 app.post("/fazerEmprestimo", async (req, res) => {
-  const {idUser, idBook} = req.body;
+  const {userName, idBook} = req.body;
 
-  const result = await borrowABack(idUser, idBook);
+  const result = await borrowABack(userName, idBook);
 
   if (result != false) return void res.status(200).json({sucess: true});
   return void res.status(400).json({sucess: false});

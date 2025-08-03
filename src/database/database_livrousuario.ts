@@ -26,7 +26,7 @@ export const getBooksUserInBd = async (
   return livrosEmprestimos;
 };
 
-export const borrowABack = async (idUser: number, idBook: number): Promise<boolean> => {
+export const borrowABack = async (userName: string, idBook: number): Promise<boolean> => {
   const connection = await connectionDB();
 
   const [livroDisponivelRows]: any = await connection!.execute(
@@ -50,10 +50,22 @@ export const borrowABack = async (idUser: number, idBook: number): Promise<boole
   try {
     await connection!.beginTransaction();
 
+    const [userRows]: any = await connection!.execute(
+      `SELECT id FROM usuarios WHERE userName = ?`,
+      [userName]
+    );
+
+    const userId = userRows[0]?.id;
+
+    if (!userId) {
+      throw new Error(`Usuário ${userName} não encontrado`);
+    }
+
     await connection!.execute(
-      `INSERT INTO livroUsuario (user_id, livro_id, data_emprestimo, data_vencimento)
+      `
+      INSERT INTO livroUsuario (user_id, livro_id, data_emprestimo, data_vencimento)
       VALUES (?, ?, ?, ?) `,
-      [idUser, idBook, dataEmprestimoFormat, dataDevolucaoFormat]
+      [userId, idBook, dataEmprestimoFormat, dataDevolucaoFormat]
     );
 
     await connection!.execute(
