@@ -21,7 +21,7 @@ COPY --from=builder /app/package*.json ./
 RUN npm install --omit=dev
 
 # Carrega variáveis de ambiente, se necessário
-COPY .env ./
+# COPY .env ./
 
 EXPOSE 3000
 
