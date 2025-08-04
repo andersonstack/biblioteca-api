@@ -4,7 +4,7 @@ FROM node:20 AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build
@@ -18,7 +18,7 @@ WORKDIR /app
 # Copia só o que foi necessário do builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
-RUN npm install --omit=dev
+RUN npm install --legacy-peer-deps --omit=dev
 
 # Carrega variáveis de ambiente, se necessário
 # COPY .env ./
