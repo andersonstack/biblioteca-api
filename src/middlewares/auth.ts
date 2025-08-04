@@ -21,7 +21,7 @@ export function autenticarToken(
 
   if (!token) return void res.status(401).json({ message: "Sem token" });
 
-  jwt.verify(token, process.env.KEY!, (err, decoded) => {
+  jwt.verify(token, process.env.APP_KEY!, (err, decoded) => {
     if (err) return void res.status(403).json({ message: "Token inválido" });
     req.user = decoded as TokenPayload;
     next();
