@@ -3,6 +3,7 @@ import { app } from "../main";
 import { getBooksInBd, saveBookInBd, updateBookInBd } from "../database/database_livro";
 import { baixarImagem } from "../utils/settings";
 import { Livro } from "../interfaces/interfaces";
+import { autenticarToken, verificarAdmin } from "../middlewares/auth";
 
 /* Configurando onde as imagens serão salvas */
 const storage = multer.diskStorage({
@@ -13,8 +14,6 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage });
-///
-
 
 app.get("/livros", async (req, res) => {
   const listaLivros = await getBooksInBd();
@@ -23,7 +22,7 @@ app.get("/livros", async (req, res) => {
   } else return void res.status(500).json({ sucess: false });
 });
 
-app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
+app.post("/cadastrarLivro", autenticarToken, verificarAdmin, upload.single('imagem'), async (req, res) => {
   const {titulo, descricao, ano, imagem: imagemLink, disponivel} = req.body;
 
   let caminhoImagem = ''
@@ -50,7 +49,7 @@ app.post("/cadastrarLivro", upload.single('imagem'), async (req, res) => {
   return void res.status(501).json({ error: "Erro ao adicionar o livro no banco de dados" });
 });
 
-app.post("/atualizarLivro", upload.single('imagem'), async (req, res) => {
+app.post("/atualizarLivro", autenticarToken, verificarAdmin, upload.single('imagem'), async (req, res) => {
   const {id, titulo, descricao, ano, imagem: imagemLink, disponivel} = req.body;
 
   let caminhoImagem = '';
