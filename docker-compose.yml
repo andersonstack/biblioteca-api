@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    container_name: biblioteca-backend
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      APP_PORT: ${APP_PORT}
+      APP_KEY: ${APP_KEY}
+    volumes:
+      - .:/app
+    networks:
+      - biblioteca-net
+
+  db:
+    image: mariadb:11.7.2
+    container_name: biblioteca_mariadb
+    restart: always
+    ports:
+      - "3306:3306"  
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - biblioteca_data:/var/lib/mysql
+    networks:
+      - biblioteca-net
+
+volumes:
+  biblioteca_data:
+
+networks:
+  biblioteca-net:
