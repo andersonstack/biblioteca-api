@@ -3,11 +3,11 @@ import mysql from "mysql2/promise";
 export const connectionDB = async () => {
   try {
     const connection = await mysql.createConnection({
-      host: "localhost",
-      port: 3307,
-      password: "123456",
-      user: "root",
-      database: "biblioteca_bd",
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_BANCO_DE_DADOS,
     });
     return connection;
   } catch (error) {
