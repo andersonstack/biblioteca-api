@@ -13,7 +13,7 @@ import "./service/rota_emprestimos";
 import "./service/rota_livro";
 import "./service/rota_usuario";
 
-app.listen(process.env.PORT!, () => {
+app.listen(process.env.APP_PORT!, () => {
   console.log("[!] Back-end rodando!");
 });
 

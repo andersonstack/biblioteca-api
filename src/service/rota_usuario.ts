@@ -32,7 +32,7 @@ app.post("/login", async (req, res) => {
 
       const token = jwt.sign(
         { userName: auth.userName, id: auth.id, role: auth.role },
-        process.env.KEY!,
+        process.env.APP_KEY!,
         { expiresIn: "1h" }
       );
       return void res.status(200).json({ success: true, token, name, userName, role });
