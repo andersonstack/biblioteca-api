@@ -1,85 +1,94 @@
 import multer from "multer";
 import { app } from "../main";
 import { getBooksInBd, saveBookInBd, updateBookInBd } from "../database/database_livro";
-import { baixarImagem } from "../utils/settings";
 import { Livro } from "../interfaces/interfaces";
 import { autenticarToken, verificarAdmin } from "../middlewares/auth";
+import { storage, cloudinary } from "../middlewares/cloudinary";
 
-/* Configurando onde as imagens serão salvas */
-const storage = multer.diskStorage({
-  destination: "./src/uploads/",
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
-  }
-});
-const upload = multer({ storage });
+const upload = multer({ storage }); // CloudinaryStorage via multer
 
+// 📚 Listar livros
 app.get("/livros", async (req, res) => {
   const listaLivros = await getBooksInBd();
   if (listaLivros?.length != 0) {
     return void res.status(200).json({ sucess: true, livros: listaLivros });
-  } else return void res.status(500).json({ sucess: false });
-});
-
-app.post("/cadastrarLivro", autenticarToken, verificarAdmin, upload.single('imagem'), async (req, res) => {
-  const {titulo, descricao, ano, imagem: imagemLink, disponivel} = req.body;
-
-  let caminhoImagem = ''
-
-  if (req.file) {
-    // Envio upload
-    caminhoImagem = `/uploads/${req.file.filename}`;
-  } else if (imagemLink && imagemLink.startsWith('http')) {
-    // Envio link
-    const imagemBaixada: Promise<string> = baixarImagem(imagemLink);
-    caminhoImagem = (await imagemBaixada).toString();
-    
-    if (caminhoImagem.length == 0)
-      return void res.status(400).json({ erro: 'Erro ao baixar imagem externa' });
-
   } else {
-    return void res.status(400).json({ erro: 'Imagem não enviada ou inválida' });
+    return void res.status(500).json({ sucess: false });
   }
-
-  const addBD = await saveBookInBd(titulo, descricao, Number(ano), caminhoImagem);
-
-  if (addBD != null) 
-    return void res.status(201).json({sucess: "Livro cadastrado!"});
-  return void res.status(501).json({ error: "Erro ao adicionar o livro no banco de dados" });
 });
 
+// ➕ Cadastrar livro
+app.post("/cadastrarLivro", autenticarToken, verificarAdmin, upload.single('imagem'), async (req, res) => {
+  const { titulo, descricao, ano, imagem: imagemLink, disponivel } = req.body;
+
+  let caminhoImagem = "";
+
+  try {
+    if (req.file) {
+      caminhoImagem = req.file.path;
+    } else if (imagemLink && imagemLink.startsWith("http")) {
+      // Upload via link externo
+      const resultado = await cloudinary.uploader.upload(imagemLink, {
+        folder: "biblioteca-livros",
+        format: "webp",
+        transformation: [{ width: 500, height: 700, crop: "limit" }],
+      });
+      caminhoImagem = resultado.secure_url;
+    } else {
+      return void res.status(400).json({ erro: "Imagem não enviada ou inválida" });
+    }
+
+    const addBD = await saveBookInBd(titulo, descricao, Number(ano), caminhoImagem);
+
+    if (addBD != null) {
+      return void res.status(201).json({ sucess: "Livro cadastrado!", link: caminhoImagem });
+    } else {
+      return void res.status(501).json({ error: "Erro ao adicionar o livro no banco de dados" });
+    }
+  } catch (error) {
+    console.error("Erro ao cadastrar livro:", error);
+    return void res.status(500).json({ error: "Erro interno no servidor" });
+  }
+});
+
+// ✏️ Atualizar livro
 app.post("/atualizarLivro", autenticarToken, verificarAdmin, upload.single('imagem'), async (req, res) => {
-  const {id, titulo, descricao, ano, imagem: imagemLink, disponivel} = req.body;
+  const { id, titulo, descricao, ano, imagem: imagemLink, disponivel } = req.body;
 
-  let caminhoImagem = '';
-  if (req.file) {
-     // Envio upload
-     caminhoImagem = `/uploads/${req.file.filename}`;
-   } else if (imagemLink && imagemLink.startsWith('http')) {
-     // Envio link
-     const imagemBaixada: Promise<string> = baixarImagem(imagemLink);
-     caminhoImagem = (await imagemBaixada).toString();
+  let caminhoImagem = "";
 
-     if (caminhoImagem.length == 0)
-       return void res.status(400).json({ erro: 'Erro ao baixar imagem externa' });
+  try {
+    if (req.file) {
+      caminhoImagem = req.file.path;
+    } else if (imagemLink && imagemLink.startsWith("http")) {
+      const resultado = await cloudinary.uploader.upload(imagemLink, {
+        folder: "biblioteca-livros",
+        format: "webp",
+        transformation: [{ width: 500, height: 700, crop: "limit" }],
+      });
+      caminhoImagem = resultado.secure_url;
+    } else {
+      return void res.status(400).json({ erro: "Imagem não enviada ou inválida" });
+    }
 
-   } else {
-     return void res.status(400).json({ erro: 'Imagem não enviada ou inválida' });
-   }
+    const updateLivro: Livro = {
+      id: id,
+      titulo: titulo,
+      descricao: descricao,
+      ano: Number(ano),
+      imagem_caminho: caminhoImagem,
+      disponibilidade: disponivel ?? 1,
+    };
 
-   const updateLivro: Livro = {
-    id: id,
-    titulo: titulo,
-    descricao: descricao,
-    ano: Number(ano),
-    imagem_caminho: caminhoImagem,
-    disponibilidade: disponivel
-   }
+    const updateBD = await updateBookInBd(updateLivro);
 
-   const updateBD = await updateBookInBd(updateLivro);
-
-   if (updateBD != null) 
-     return void res.status(201).json({sucess: "Livro editado!"});
-   return void res.status(501).json({ error: "Erro ao editar o livro no banco de dados" });
+    if (updateBD != null) {
+      return void res.status(201).json({ sucess: "Livro editado!", link: caminhoImagem });
+    } else {
+      return void res.status(501).json({ error: "Erro ao editar o livro no banco de dados" });
+    }
+  } catch (error) {
+    console.error("Erro ao editar livro:", error);
+    return void res.status(500).json({ error: "Erro interno no servidor" });
+  }
 });
