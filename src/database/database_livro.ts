@@ -25,29 +25,34 @@ export const saveBookInBd = async (
 ): Promise<any> => {
   const connection = await connectionDB();
 
-  const query = `
+  const insertQuery = `
     INSERT INTO livros (titulo, ano, descricao, imagem_caminho, disponibilidade)
     VALUES (?, ?, ?, ?, 1)
   `;
 
-  const [result] = await connection!.execute(query, [
+  const [result]: any = await connection!.execute(insertQuery, [
     titulo,
     ano,
     descricao,
     imagem,
   ]);
 
+  const insertedId = result.insertId;
+
+  const [rows]: any = await connection!.execute(
+    `SELECT * FROM livros WHERE id = ?`,
+    [insertedId]
+  );
+
   await connection!.end();
 
-  return result;
+  return rows[0];
 };
 
-export const updateBookInBd = async (livro: Livro) => {
+export const updateBookInBd = async (livro: Livro): Promise<Livro | null> => {
   const connection = await connectionDB();
 
-  console.log(livro);
-
-  const query = `
+  const updateQuery = `
     UPDATE livros
       SET
         titulo = ?,
@@ -58,11 +63,27 @@ export const updateBookInBd = async (livro: Livro) => {
       WHERE id = ?
   `;
 
-  const [result] = await connection!.execute(query, [
-    livro.titulo, livro.ano, livro.descricao, livro.imagem_caminho, livro.disponibilidade, livro.id
+  const [result]: any = await connection!.execute(updateQuery, [
+    livro.titulo,
+    livro.ano,
+    livro.descricao,
+    livro.imagem_caminho,
+    livro.disponibilidade,
+    livro.id,
   ]);
+
+  if (result.affectedRows === 0) {
+    await connection!.end();
+    return null;
+  }
+
+  const [rows]: any = await connection!.execute(
+    `SELECT * FROM livros WHERE id = ?`,
+    [livro.id]
+  );
 
   await connection!.end();
 
-  return result;
+  return rows[0];
 };
+

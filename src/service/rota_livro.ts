@@ -41,7 +41,16 @@ app.post("/cadastrarLivro", autenticarToken, verificarAdmin, upload.single('imag
     const addBD = await saveBookInBd(titulo, descricao, Number(ano), caminhoImagem);
 
     if (addBD != null) {
-      return void res.status(201).json({ sucess: "Livro cadastrado!", link: caminhoImagem });
+      const livroResponse: Livro = {
+        id: addBD.id,
+        titulo: addBD.titulo,
+        ano: addBD.ano,
+        descricao: addBD.descricao,
+        imagem_caminho: addBD.imagem_caminho,
+        disponibilidade: addBD.disponibilidade
+      };
+
+      return void res.status(201).json({ sucess: "Livro cadastrado!", livro: livroResponse });
     } else {
       return void res.status(501).json({ error: "Erro ao adicionar o livro no banco de dados" });
     }
@@ -83,7 +92,7 @@ app.post("/atualizarLivro", autenticarToken, verificarAdmin, upload.single('imag
     const updateBD = await updateBookInBd(updateLivro);
 
     if (updateBD != null) {
-      return void res.status(201).json({ sucess: "Livro editado!", link: caminhoImagem });
+      return void res.status(201).json({ sucess: "Livro editado!", livro: updateLivro });
     } else {
       return void res.status(501).json({ error: "Erro ao editar o livro no banco de dados" });
     }
