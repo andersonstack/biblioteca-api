@@ -18,3 +18,7 @@ app.listen(process.env.APP_PORT!, () => {
 });
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.get("/health", (req, res) => {
+  res.status(200).send("Ok");
+});
